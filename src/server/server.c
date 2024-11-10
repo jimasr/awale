@@ -28,6 +28,8 @@ static void end(void)
 
 static void app(void)
 {
+   printf("test");
+
    SOCKET sock = init_connection();
    char buffer[BUF_SIZE];
    /* the index for the array */
@@ -71,7 +73,7 @@ static void app(void)
       {
          /* new client */
          SOCKADDR_IN csin = { 0 };
-         size_t sinsize = sizeof csin;
+         __socklen_t sinsize = sizeof csin;
          int csock = accept(sock, (SOCKADDR *)&csin, &sinsize);
          if(csock == SOCKET_ERROR)
          {
