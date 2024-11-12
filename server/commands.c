@@ -5,6 +5,30 @@
 #include <string.h>
 #include <time.h>
 
+// Fonction pour envoyer un message d'aide
+void send_help(Client *client)
+{
+    const char *help_message = 
+        "Available commands:\n"
+        "/list_users          - List all active users\n"
+        "/start_duel <user>   - Challenge a user to a duel\n"
+        "/list_games          - List all active games\n"
+        "/make_move <pit>     - Make a move in your game\n"
+        "/watch_player <user> - Watch a player's game\n"
+        "/change_bio <bio>    - Update your biography\n"
+        "/show_bio <user>     - Show the biography of a user\n"
+        "/add_friend <user>   - Send a friend request\n"
+        "/list_friends        - List your friends\n"
+        "/toggle_private      - Toggle private mode\n"
+        "/leave_game          - Leave your current game\n"
+        "/game_history        - View your game history\n"
+        "/replay_game <id>    - Replay a game by ID\n"
+        "/help                - Show this help message\n";
+
+    // Envoi du message d'aide au client
+    write_client(client->socket, help_message);
+}
+
 // Fonction pour obtenir la liste des clients actifs
 void get_client_list(ActiveClients active_clients, Client *client,
                      char *message) 

@@ -7,431 +7,499 @@
 #include <stdlib.h>
 #include <string.h>
 
-Game *init_game(char *username1, char *username2, int *current_gm_id) {
-  Game *g = (Game *)malloc(sizeof(Game));
-  g->board = (int *)malloc(sizeof(int) * PITS_NB);
-  g->game_id = *current_gm_id;
-  *current_gm_id = *current_gm_id+1;
-  strncpy(g->player1, username1, USERNAME_SIZE - 1);
-  g->player1[USERNAME_SIZE - 1] = '\0';
+Game *init_game(char *joueur1, char *joueur2, int *id_jeu_courant)
+{
+  Game *jeu = (Game *)malloc(sizeof(Game));
+  jeu->board = (int *)malloc(sizeof(int) * PITS_NB);
+  jeu->game_id = *id_jeu_courant;
+  *id_jeu_courant += 1;
 
-  strncpy(g->player2, username2, USERNAME_SIZE - 1);
-  g->player2[USERNAME_SIZE - 1] = '\0';
+  strncpy(jeu->player1, joueur1, USERNAME_SIZE - 1);
+  jeu->player1[USERNAME_SIZE - 1] = '\0';
 
-  g->moves = (Moves *)malloc(sizeof(Moves));
-  g->moves->first = NULL;
-  g->moves->last = NULL;
-  g->moves->size = 0;
+  strncpy(jeu->player2, joueur2, USERNAME_SIZE - 1);
+  jeu->player2[USERNAME_SIZE - 1] = '\0';
 
-  for (int i = 0; i < PITS_NB; ++i) {
-    g->board[i] = 4;
+  jeu->moves = (Moves *)malloc(sizeof(Moves));
+  jeu->moves->first = NULL;
+  jeu->moves->last = NULL;
+  jeu->moves->size = 0;
+
+  for (int i = 0; i < PITS_NB; ++i)
+  {
+    jeu->board[i] = 4; // Initialisation des cases avec 4 graines chacune
   }
 
-  g->score_player1 = 0;
-  g->score_player2 = 0;
+  jeu->score_player1 = 0;
+  jeu->score_player2 = 0;
+  jeu->rotation_sens = -1; // Sens de rotation par défaut
 
-  g->rotation_sens = -1;
-
-  return g;
+  return jeu;
 }
 
-char *create_board(Game *g, int player) {
-  int idx_row1, idx_row2;
-  char *opp;
-  char *name;
-  idx_row1 = PITS_NB / 2 * (2 - player);
-  idx_row2 = PITS_NB / 2 * player - 1;
+char *create_board(Game *jeu, int joueur)
+{
+  int ligne_haute, ligne_basse;
+  char *adversaire, *nom_joueur;
+  ligne_haute = PITS_NB / 2 * (2 - joueur);
+  ligne_basse = PITS_NB / 2 * joueur - 1;
 
-  if (player == 1) {
-    opp = g->player2;
-    name = g->player1;
-  } else {
-    opp = g->player1;
-    name = g->player2;
+  if (joueur == 1)
+  {
+    adversaire = jeu->player2;
+    nom_joueur = jeu->player1;
+  }
+  else
+  {
+    adversaire = jeu->player1;
+    nom_joueur = jeu->player2;
   }
 
-  char *board_display = (char *)malloc(200 * sizeof(char)); 
-  sprintf(board_display, "%s's side\n\n", opp);
+  char *plateau_affichage = (char *)malloc(200 * sizeof(char));
+  sprintf(plateau_affichage, "Côté de %s\n\n", adversaire);
 
-  for (int i = idx_row1; i < idx_row1 + 6; ++i) {
-    sprintf(board_display + strlen(board_display), " | %d", g->board[i]);
+  for (int i = ligne_haute; i < ligne_haute + 6; ++i)
+  {
+    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", jeu->board[i]);
   }
-  sprintf(board_display + strlen(board_display), " |\n");
+  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n");
 
-  for (int i = 0; i < PITS_NB / 2; ++i) {
-    sprintf(board_display + strlen(board_display), "-----");
+  for (int i = 0; i < PITS_NB / 2; ++i)
+  {
+    sprintf(plateau_affichage + strlen(plateau_affichage), "-----");
   }
-  sprintf(board_display + strlen(board_display), "\n");
+  sprintf(plateau_affichage + strlen(plateau_affichage), "\n");
 
-  for (int i = idx_row2; i > idx_row2 - 6; --i) {
-    sprintf(board_display + strlen(board_display), " | %d", g->board[i]);
+  for (int i = ligne_basse; i > ligne_basse - 6; --i)
+  {
+    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", jeu->board[i]);
   }
-  sprintf(board_display + strlen(board_display), " |\n\n%s's side\n\n", name);
+  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n\nCôté de %s\n\n", nom_joueur);
 
-  for (int j = 1; j <= 6; ++j) {
-    sprintf(board_display + strlen(board_display), " | %d", j);
+  for (int j = 1; j <= 6; ++j)
+  {
+    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", j);
   }
-  sprintf(board_display + strlen(board_display), " |\n\n");
+  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n\n");
 
-  return board_display;
+  return plateau_affichage;
 }
 
-void display_board(Game *g, int player) {
+void display_board(Game *jeu, int joueur)
+{
+  int ligne_haute, ligne_basse;
+  char *adversaire, *nom_joueur;
+  ligne_haute = PITS_NB / 2 * (2 - joueur);
+  ligne_basse = PITS_NB / 2 * joueur - 1;
 
-  int idx_row1, idx_row2;
-  char *opp;
-  char *name;
-  idx_row1 = PITS_NB / 2 * (2 - player);
-  idx_row2 = PITS_NB / 2 * player - 1;
-
-  if (player == 1) {
-    opp = g->player2;
-    name = g->player1;
-
-  } else {
-    opp = g->player1;
-    name = g->player2;
+  if (joueur == 1)
+  {
+    adversaire = jeu->player2;
+    nom_joueur = jeu->player1;
   }
-  printf("%s'side\n\n", opp);
+  else
+  {
+    adversaire = jeu->player1;
+    nom_joueur = jeu->player2;
+  }
 
-  for (int i = idx_row1; i < idx_row1 + 6; ++i) {
-    printf(" | %d", g->board[i]);
+  printf("Côté de %s\n\n", adversaire);
+  for (int i = ligne_haute; i < ligne_haute + 6; ++i)
+  {
+    printf(" | %d", jeu->board[i]);
   }
   printf(" |\n");
-  for (int i = 0; i < PITS_NB / 2; ++i) {
+  for (int i = 0; i < PITS_NB / 2; ++i)
+  {
     printf("-----");
   }
   printf("\n");
-  for (int i = idx_row2; i > idx_row2 - 6; --i) {
-    printf(" | %d", g->board[i]);
+  for (int i = ligne_basse; i > ligne_basse - 6; --i)
+  {
+    printf(" | %d", jeu->board[i]);
   }
   printf(" |\n\n");
-  printf("%s'side\n\n", name);
-  for (int j = 1; j <= 6; ++j) {
+  printf("Côté de %s\n\n", nom_joueur);
+  for (int j = 1; j <= 6; ++j)
+  {
     printf(" | %d", j);
   }
   printf(" |\n\n");
 }
 
-void copy_board(int *board1, int *board2) {
-
-  for (int i = 0; i < PITS_NB; ++i) {
-    board2[i] = board1[i];
+void copy_board(int *source, int *destination)
+{
+  for (int i = 0; i < PITS_NB; ++i)
+  {
+    destination[i] = source[i];
   }
 }
 
-void clean_board(Game *g) {
-
-  for (int i = 0; i < PITS_NB; ++i) {
-    g->board[i] = 0;
+void clean_board(Game *jeu)
+{
+  for (int i = 0; i < PITS_NB; ++i)
+  {
+    jeu->board[i] = 0; // Vide toutes les cases du plateau
   }
 }
 
-bool is_in_player_side(int joueur, int visited_pit) {
-  return (PITS_NB / 2 * joueur > visited_pit) &&
-         (PITS_NB / 2 * (joueur - 1) <= visited_pit);
+bool is_in_player_side(int joueur, int case_visitee)
+{
+  return (PITS_NB / 2 * joueur > case_visitee) &&
+         (PITS_NB / 2 * (joueur - 1) <= case_visitee);
 }
 
-int make_a_move(Game *g, int selected_pit, int player) {
-  int seed_nbs;
-  int res = 1;
-  int visited_pit, starting_pit;
-  int *scoreplayer = (player == 1) ? (&g->score_player1) : (&g->score_player2);
-  int temp_score = *scoreplayer;
-  int *tmp_board;
-  int *tmp_board2;
-  int opp = (player == 1) ? (2) : (1);
+int make_a_move(Game *jeu, int case_choisie, int joueur)
+{
+  int graines_restantes;
+  int resultat = 1;
+  int case_visitee, case_depart;
+  int *score_joueur = (joueur == 1) ? (&jeu->score_player1) : (&jeu->score_player2);
+  int score_temporaire = *score_joueur;
+  int *plateau_temp1;
+  int *plateau_temp2;
+  int adversaire = (joueur == 1) ? (2) : (1);
 
-  tmp_board2 = (int *)malloc(PITS_NB * sizeof(int));
-  copy_board(g->board, tmp_board2);
+  plateau_temp2 = (int *)malloc(PITS_NB * sizeof(int));
+  copy_board(jeu->board, plateau_temp2);
 
-  starting_pit = (PITS_NB / 2 * player) - selected_pit;
-  visited_pit = starting_pit;
+  case_depart = (PITS_NB / 2 * joueur) - case_choisie;
+  case_visitee = case_depart;
 
-  seed_nbs = g->board[visited_pit];
-  g->board[visited_pit] = 0;
+  graines_restantes = jeu->board[case_visitee];
+  jeu->board[case_visitee] = 0;
 
-
-  if(!seed_nbs) {
-
-    return -1;
-
+  if (!graines_restantes)
+  {
+    return -1; // Case vide, mouvement invalide
   }
 
+  while (graines_restantes > 0)
+  {
+    case_visitee = (case_visitee + jeu->rotation_sens) % 12;
 
-  while (seed_nbs > 0) {
-    visited_pit = (visited_pit + g->rotation_sens) % 12;
-
-    if (visited_pit == -1) {
-      visited_pit = 11;
-    } else if (visited_pit == 12) {
-      visited_pit = 0;
+    if (case_visitee == -1)
+    {
+      case_visitee = 11;
+    }
+    else if (case_visitee == 12)
+    {
+      case_visitee = 0;
     }
 
-    if (visited_pit == starting_pit) {
+    if (case_visitee == case_depart)
+    {
       continue;
     }
 
-
-
-    g->board[visited_pit] = g->board[visited_pit] + 1;
-    seed_nbs--;
+    jeu->board[case_visitee]++;
+    graines_restantes--;
   }
 
-  if (!have_a_seed(g, opp)) {
-    
-    copy_board(tmp_board2, g->board);
-    return 0;
+  if (!have_a_seed(jeu, adversaire))
+  {
+    copy_board(plateau_temp2, jeu->board);
+    return 0; // Le joueur doit nourrir l'adversaire
   }
 
-  tmp_board = (int *)malloc(PITS_NB * sizeof(int));
-  copy_board(g->board, tmp_board);
+  plateau_temp1 = (int *)malloc(PITS_NB * sizeof(int));
+  copy_board(jeu->board, plateau_temp1);
 
+  while (!is_in_player_side(joueur, case_visitee) &&
+         (jeu->board[case_visitee] == 2 || jeu->board[case_visitee] == 3))
+  {
+    *score_joueur += jeu->board[case_visitee];
+    jeu->board[case_visitee] = 0;
+    case_visitee -= jeu->rotation_sens;
 
-
-  while (!is_in_player_side(player, visited_pit) &&
-         (g->board[visited_pit] == 2 || g->board[visited_pit] == 3)) {
-    printf("Player takes this seeds : %d\n", g->board[visited_pit]);
-    *scoreplayer += g->board[visited_pit];
-    g->board[visited_pit] = 0;
-    visited_pit -= g->rotation_sens;
-
-    if (!have_a_seed(g, opp)) {
-      copy_board(tmp_board, g->board);
-      *scoreplayer = temp_score;
-      res = 2;
+    if (!have_a_seed(jeu, adversaire))
+    {
+      copy_board(plateau_temp1, jeu->board);
+      *score_joueur = score_temporaire;
+      resultat = 2;
     }
   }
-  add_play_to_moves(g, player, selected_pit);
 
-  return res;
+  add_play_to_moves(jeu, joueur, case_choisie);
+  return resultat;
 }
 
-void display_score(Game *g) {
-
-  printf("Score of player 1 : %d\n", g->score_player1);
-
-  printf("Score of player 2 : %d\n", g->score_player2);
+void display_score(Game *jeu)
+{
+  printf("Score du joueur 1 : %d\n", jeu->score_player1);
+  printf("Score du joueur 2 : %d\n", jeu->score_player2);
 }
 
-bool have_a_seed(Game *g, int player) {
-  int visited_pit = PITS_NB / 2 * (player - 1);
-  while (g->board[visited_pit] == 0 && visited_pit < PITS_NB / 2 * player) {
-    visited_pit++;
+bool have_a_seed(Game *jeu, int joueur)
+{
+  int case_actuelle = PITS_NB / 2 * (joueur - 1);
+  while (jeu->board[case_actuelle] == 0 && case_actuelle < PITS_NB / 2 * joueur)
+  {
+    case_actuelle++;
   }
-  return (visited_pit == PITS_NB / 2 * player) ? false : true;
+  return (case_actuelle == PITS_NB / 2 * joueur) ? false : true;
 }
 
-int nb_of_tiles(Game *g, int select_tile, int player) {
-  if (g->rotation_sens == 1) {
-    return (PITS_NB / 2 * (player)-select_tile);
-  } else {
-    return select_tile + 1 - 6 * (player - 1);
+int nb_of_tiles(Game *jeu, int case_selectionnee, int joueur)
+{
+  if (jeu->rotation_sens == 1)
+  {
+    return (PITS_NB / 2 * joueur - case_selectionnee);
+  }
+  else
+  {
+    return case_selectionnee + 1 - 6 * (joueur - 1);
   }
 }
 
-bool can_feed(Game *g, int player) {
-
-  int visited_pit = PITS_NB / 2 * (player - 1);
-  while (g->board[visited_pit] < nb_of_tiles(g, visited_pit, player)) {
-    visited_pit++;
+bool can_feed(Game *jeu, int joueur)
+{
+  int case_actuelle = PITS_NB / 2 * (joueur - 1);
+  while (jeu->board[case_actuelle] < nb_of_tiles(jeu, case_actuelle, joueur))
+  {
+    case_actuelle++;
   }
-  return (visited_pit == PITS_NB / 2 * player) ? false : true;
+  return (case_actuelle == PITS_NB / 2 * joueur) ? false : true;
 }
 
-int nb_of_pits(int selected_pit, int player, Game *game) {
-  if (game->rotation_sens == 1) {
+int nb_of_pits(int selected_pit, int player, Game *game)
+{
+  if (game->rotation_sens == 1)
+  {
     return (PITS_NB / 2 * (player)-selected_pit);
-  } else {
+  }
+  else
+  {
     return selected_pit + 1 - 6 * (player - 1);
   }
 }
 
-bool force_feed(Game *game, int *play, int *indexPlay, int player) {
-
-  if (have_a_seed(game, player)) {
-    return false;
+bool force_feed(Game *jeu, int *coups_possibles, int *index_coups, int joueur)
+{
+  if (have_a_seed(jeu, joueur))
+  {
+    return false; // Pas besoin de nourrir
   }
 
-  int visited_pit = PITS_NB / 2 * (player - 1);
-  *indexPlay = 0;
-  while (visited_pit < PITS_NB / 2 * (player)) {
-    if (game->board[visited_pit] <
-        nb_of_pits(visited_pit, player, game)) {
-      play[*indexPlay] = visited_pit % (PITS_NB / 2);
-      (*indexPlay)++;
+  int case_actuelle = PITS_NB / 2 * (joueur - 1);
+  *index_coups = 0;
+  while (case_actuelle < PITS_NB / 2 * joueur)
+  {
+    if (jeu->board[case_actuelle] < nb_of_tiles(jeu, case_actuelle, joueur))
+    {
+      coups_possibles[*index_coups] = case_actuelle % (PITS_NB / 2);
+      (*index_coups)++;
     }
-    visited_pit++;
+    case_actuelle++;
   }
 
-  return true;
+  return true; // Le joueur doit nourrir
 }
 
-int end_of_game_test(Game *g, int player) {
-  int opp = (player == 1) ? (2) : (1);
-  int *scoreplayer = (player == 1) ? (&g->score_player1) : (&g->score_player2);
-  int *scoreopp = (player == 1) ? (&g->score_player2) : (&g->score_player1);
+int end_of_game_test(Game *jeu, int joueur)
+{
+  int adversaire = (joueur == 1) ? 2 : 1;
+  int *score_joueur = (joueur == 1) ? &jeu->score_player1 : &jeu->score_player2;
+  int *score_adversaire = (joueur == 1) ? &jeu->score_player2 : &jeu->score_player1;
 
-  if (g->score_player1 >= 25) {
-    return 1;
+  if (jeu->score_player1 >= 25)
+  {
+    return 1; // Joueur 1 gagne
   }
 
-  if (g->score_player2 >= 25) {
-    return 2;
+  if (jeu->score_player2 >= 25)
+  {
+    return 2; // Joueur 2 gagne
   }
 
-  if (!have_a_seed(g, player)) {
-    int play[PITS_NB / 2];
-    int indexPlay = 0;
-    if (force_feed(g, play, &indexPlay, opp)) {
-      return 0;
+  if (!have_a_seed(jeu, joueur))
+  {
+    int coups_possibles[PITS_NB / 2];
+    int index_coups = 0;
 
-    } else {
-      *scoreopp += sum_seeds_left(g, opp);
-      (player == 1) ? (&g->score_player2) : (&g->score_player1);
-      return (*scoreopp > *scoreplayer) ? (opp) : (player);
+    if (force_feed(jeu, coups_possibles, &index_coups, adversaire))
+    {
+      return 0; // La partie continue, l'adversaire doit nourrir
+    }
+    else
+    {
+      *score_adversaire += sum_seeds_left(jeu, adversaire);
+      return (*score_adversaire > *score_joueur) ? adversaire : joueur;
     }
   }
 
-  return 0;
+  return 0; // Partie non terminée
 }
 
+int sum_seeds_left(Game *jeu, int joueur)
+{
+  int debut, fin;
+  int somme = 0;
 
-int sum_seeds_left(Game *g, int player) {
-  int start;
-  int end;
-  int sum = 0;
-  if (player == 1) {
-    start = 0;
-    end = 5;
-  } else {
-    start = 6;
-    end = 11;
+  if (joueur == 1)
+  {
+    debut = 0;
+    fin = 5;
   }
-  for (int i = start; i <= end; i++) {
-    sum += g->board[i];
+  else
+  {
+    debut = 6;
+    fin = 11;
   }
-  return sum;
+
+  for (int i = debut; i <= fin; i++)
+  {
+    somme += jeu->board[i];
+  }
+
+  return somme; // Retourne le total des graines restantes
 }
 
-void add_play_to_moves(Game *g, int player, int selected_pit){
-    Move* move = (Move*)malloc(sizeof(Move));
-    char* name;
-    if(player == 1){
-       name = g->player1;
-    } else {
-      name = g->player2;
-    }
-  strcpy(move->player,name);
-  move->value = selected_pit;
-    if(g->moves->first == NULL){
-        g->moves->first = move;
-        g->moves->last = move;
-    } else {
-        g->moves->last->next = move;
-        move->previous = g->moves->last;
-        g->moves->last = move;
-    }
-    move->next = NULL;
-    g->moves->size++;
+void add_play_to_moves(Game *jeu, int joueur, int case_selectionnee)
+{
+  Move *nouveau_coup = (Move *)malloc(sizeof(Move));
+  char *nom_joueur = (joueur == 1) ? jeu->player1 : jeu->player2;
+
+  strcpy(nouveau_coup->player, nom_joueur);
+  nouveau_coup->value = case_selectionnee;
+
+  if (jeu->moves->first == NULL)
+  {
+    jeu->moves->first = nouveau_coup;
+    jeu->moves->last = nouveau_coup;
+  }
+  else
+  {
+    jeu->moves->last->next = nouveau_coup;
+    nouveau_coup->previous = jeu->moves->last;
+    jeu->moves->last = nouveau_coup;
+  }
+
+  nouveau_coup->next = NULL;
+  jeu->moves->size++;
 }
 
-char* replay_game(Game *g){
-    int temp = 5;
-    Game * game = init_game(g->player1,g->player2,&temp);
-    game->rotation_sens = g->rotation_sens;
-    char *board_display = (char *)malloc((200 *  (g->moves->size + 1)) * sizeof(char));
-    int pov = 1;
-    strcat(board_display,create_board(game,pov));
-    Move * current = g->moves->first;
-    while(current != NULL){
-        int play = (!strcmp(current->player, game->player1)) ? (1) : (2);
-        make_a_move(game, current->value, play);
-        strcat(board_display,create_board(game,pov));
-        current = current->next;
-    }
-    strcat(board_display,"\n\nThw winner is :");
-    strcat(board_display,g->winner);
-    strcat(board_display,"\n\n");
-    return board_display;
+char *replay_game(Game *jeu)
+{
+  int id_temp = 5;
+  Game *jeu_temp = init_game(jeu->player1, jeu->player2, &id_temp);
+  jeu_temp->rotation_sens = jeu->rotation_sens;
+
+  char *historique_plateau = (char *)malloc((200 * (jeu->moves->size + 1)) * sizeof(char));
+  int perspective = 1;
+
+  strcat(historique_plateau, create_board(jeu_temp, perspective));
+  Move *coup_actuel = jeu->moves->first;
+
+  while (coup_actuel != NULL)
+  {
+    int joueur = (!strcmp(coup_actuel->player, jeu->player1)) ? 1 : 2;
+    make_a_move(jeu_temp, coup_actuel->value, joueur);
+    strcat(historique_plateau, create_board(jeu_temp, perspective));
+    coup_actuel = coup_actuel->next;
+  }
+
+  strcat(historique_plateau, "\n\nLe gagnant est : ");
+  strcat(historique_plateau, jeu->winner);
+  strcat(historique_plateau, "\n\n");
+
+  return historique_plateau;
 }
 
-void parseGameToCSV(Game *game, const char *filename) {
-    FILE *file = fopen(filename, "a");
-    if (file == NULL) {
-        printf("Erreur lors de l'ouverture du fichier.\n");
-        return;
-    }
+void parseGameToCSV(Game *jeu, const char *nom_fichier)
+{
+  FILE *fichier = fopen(nom_fichier, "a");
+  if (fichier == NULL)
+  {
+    printf("Erreur lors de l'ouverture du fichier.\n");
+    return;
+  }
 
-    
-    fprintf(file, "%d,%s,%s,%d,%d,%d,%s\n",
-            game->game_id, game->player1, game->player2,
-            game->score_player1, game->score_player2, game->rotation_sens,game->winner);
+  fprintf(fichier, "%d,%s,%s,%d,%d,%d,%s\n",
+          jeu->game_id, jeu->player1, jeu->player2,
+          jeu->score_player1, jeu->score_player2,
+          jeu->rotation_sens, jeu->winner);
 
-   
-    Moves *movesList = game->moves;
-    if (movesList != NULL) {
-        Move *currentMove = movesList->first;
-        while (currentMove != NULL) {
-            fprintf(file, "%s,%d\n", currentMove->player, currentMove->value);
-            currentMove = currentMove->next;
-            movesList->size++;
-        }
-    }
-    fprintf(file,"%s\n","end");
-    fclose(file);
+  Move *coup = jeu->moves->first;
+  while (coup != NULL)
+  {
+    fprintf(fichier, "%s,%d\n", coup->player, coup->value);
+    coup = coup->next;
+  }
+
+  fprintf(fichier, "end\n");
+  fclose(fichier);
 }
 
-Game* parseCSVToGame(FILE *file) {
-        if (file == NULL) {
-        printf("Erreur lors de l'ouverture du fichier.\n");
-        return NULL;
-    }
-    Game *newGame = (Game*)malloc(sizeof(Game));
-    if (newGame == NULL) {
-        printf("Erreur d'allocation de mémoire pour Game.\n");
-        fclose(file);
-        return NULL;
-    }
-    char buffer[1024];
-    fgets(buffer, sizeof(buffer), file);
-   
-    if(strstr(buffer,"end") ){
-       fgets(buffer, sizeof(buffer), file);
-      }
-    if(!strcmp(buffer,"\n") || feof(file)){
-      return NULL;
-    }
-    
-    sscanf(buffer, "%d,%[^,],%[^,],%d,%d,%d,%s\n",
-           &newGame->game_id, newGame->player1,newGame->player2,
-           &newGame->score_player1, &newGame->score_player2, &newGame->rotation_sens, newGame->winner);
-    
-    newGame->moves = (Moves *)malloc(sizeof(Moves));
-    newGame->moves->first = NULL;
-    newGame->moves->last = NULL;
-    newGame->moves->size = 0;
-    char player[USERNAME_SIZE];
-    int play;
-    
-     while (strcmp(fgets(buffer, sizeof(buffer), file),"end")) {
-      if(strstr(buffer,"end")){
-        break;
-      }
-        sscanf(buffer, "%[^,],%d\n", player, &play);
-        if(!strcmp(newGame->player1,player)){
-          add_play_to_moves(newGame,1,play);
-        } else if(!strcmp(newGame->player2,player)){
-          add_play_to_moves(newGame,2,play);
-        }
-    }
-    
-    return newGame;
-} 
+Game *parseCSVToGame(FILE *fichier)
+{
+  if (fichier == NULL)
+  {
+    printf("Erreur lors de l'ouverture du fichier.\n");
+    return NULL;
+  }
 
-void delete_game(Game *g) {
-  free(g->board);
+  Game *jeu = (Game *)malloc(sizeof(Game));
+  char buffer[1024];
 
-  free(g->moves);
-  free(g);
+  fgets(buffer, sizeof(buffer), fichier);
+  if (strstr(buffer, "end"))
+  {
+    fgets(buffer, sizeof(buffer), fichier);
+  }
+
+  if (!strcmp(buffer, "\n") || feof(fichier))
+  {
+    return NULL;
+  }
+
+  sscanf(buffer, "%d,%[^,],%[^,],%d,%d,%d,%s\n",
+         &jeu->game_id, jeu->player1, jeu->player2,
+         &jeu->score_player1, &jeu->score_player2,
+         &jeu->rotation_sens, jeu->winner);
+
+  jeu->moves = (Moves *)malloc(sizeof(Moves));
+  jeu->moves->first = NULL;
+  jeu->moves->last = NULL;
+  jeu->moves->size = 0;
+
+  char joueur[USERNAME_SIZE];
+  int coup;
+
+  while (strcmp(fgets(buffer, sizeof(buffer), fichier), "end"))
+  {
+    if (strstr(buffer, "end"))
+    {
+      break;
+    }
+
+    sscanf(buffer, "%[^,],%d\n", joueur, &coup);
+    if (!strcmp(jeu->player1, joueur))
+    {
+      add_play_to_moves(jeu, 1, coup);
+    }
+    else
+    {
+      add_play_to_moves(jeu, 2, coup);
+    }
+  }
+
+  return jeu;
 }
+
+void delete_game(Game *jeu)
+{
+  free(jeu->board);
+
+  Move *coup_actuel = jeu->moves->first;
+  while (coup_actuel != NULL)
+  {
+    Move *temp = coup_actuel;
+    coup_actuel = coup_actuel->next;
+    free(temp);
+  }
+
+  free(jeu->moves);
+  free(jeu);
+}
+

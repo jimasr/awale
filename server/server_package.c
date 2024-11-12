@@ -81,6 +81,9 @@ void handle_incomming_package(const ActiveClients clients, Client *client,
       sscanf(it2, "%s %d", command2, &game_id);      // Lire la commande et l'identifiant du jeu
       rewatch_game(client, games, game_id, message); // Revoir le jeu
       break;
+    case 13:
+      send_help(client); // Envoyer l'aide
+      break;
     default:
       break; // Ne rien faire pour les commandes inconnues
     }

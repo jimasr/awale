@@ -135,4 +135,12 @@ Game * find_game_by_id(Games *games, int game_id);
  */
 void rewatch_game(Client * client, Games *games,int game_id, char *buffer);
 
+/**
+ * @brief Envoie un message d'aide au client.
+ * 
+ * @param client Pointeur vers le client.
+ */
+void send_help(Client *client);
+
+
 #endif
