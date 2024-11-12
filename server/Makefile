@@ -1,5 +1,5 @@
-bin/prog.out:bin/server.o bin/server_client.o bin/commands.o bin/server_package.o bin/game.o
-	gcc -o bin/prog.out bin/server.o bin/server_client.o bin/commands.o bin/server_package.o bin/game.o
+bin/server:bin/server.o bin/server_client.o bin/commands.o bin/server_package.o bin/game.o
+	gcc -o bin/server bin/server.o bin/server_client.o bin/commands.o bin/server_package.o bin/game.o
 
 bin/server.o:server.c
 	gcc -c server.c -o bin/server.o

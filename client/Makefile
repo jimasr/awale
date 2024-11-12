@@ -1,5 +1,5 @@
-bin/prog.out:bin/client.o bin/client_package.o 
-	gcc -o bin/prog.out bin/client.o bin/client_package.o
+bin/client:bin/client.o bin/client_package.o 
+	gcc -o bin/client bin/client.o bin/client_package.o
 
 bin/client.o: client.c
 	gcc -c client.c -o bin/client.o

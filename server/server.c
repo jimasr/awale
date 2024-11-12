@@ -11,7 +11,7 @@
 #include "server_package.h"
 
 // Fonction principale de l'application
-static void app(void)
+static void server_main_loop(void)
 {
   SOCKET sock = init_connection(); // On récupère le FD de la socket du serveur.
 
@@ -296,6 +296,6 @@ int get_last_id(Games *games)
 // Fonction principale
 int main(int argc, char **argv)
 {
-  app();               // Appeler la fonction principale de l'application
+  server_main_loop();               // Appeler la fonction principale de l'application
   return EXIT_SUCCESS; // Retourner le succès
 }

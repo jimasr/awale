@@ -9,7 +9,7 @@
 #include "client_package.h"
 
 // Fonction principale de l'application
-static void app(const char *address, const char *name) {
+static void client_main_loop(const char *address, const char *name) {
   SOCKET sock = init_connection(address); // Initialisation de la connexion
   char buffer[BUF_SIZE];
 
@@ -115,7 +115,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  app(argv[1], argv[2]); // Appel de la fonction principale de l'application
+  client_main_loop(argv[1], argv[2]); // Appel de la fonction principale de l'application
 
   return EXIT_SUCCESS;
 }

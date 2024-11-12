@@ -1,7 +1,7 @@
 #ifndef OPTIONS_H 
 #define OPTIONS_H 
 
-#define USERNAME_SIZE 11 // Taille maximale du nom d'utilisateur
+#define USERNAME_SIZE 40 // Taille maximale du nom d'utilisateur
 #define BIO_SIZE 160 // Taille maximale de la biographie
 #define MAX_CLIENTS 25 // Nombre maximal de clients
 #define INVALID_SOCKET -1 // Valeur pour un socket invalide

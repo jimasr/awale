@@ -13,7 +13,7 @@
 /**
  * @brief Fonction principale de l'application serveur.
  */
-static void app(void);
+static void client_main_loop(void);
 
 /**
  * @brief Initialise la connexion du serveur.

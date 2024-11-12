@@ -125,16 +125,19 @@ void remove_observer(Observers *observers, Client *client) {
 // Ajoute un ami à la liste des amis
 int add_friend(FriendList *friends, Friend *new_friend) {
   if (!friends->first) {
+    printf("DEBUG: No friends yet\n");
     friends->first = new_friend;
     friends->last = new_friend;
     return 1;
   } else {
+    printf("DEBUG: Adding friend to list\n");
     friends->last->next = new_friend;
     new_friend->previous = friends->last;
     friends->last = new_friend;
     return 1;
   }
 }
+
 
 // Supprime un ami de la liste des amis
 void remove_friend(FriendList *friends, Client *client) {

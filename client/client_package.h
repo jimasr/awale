@@ -18,4 +18,15 @@
  */
 int process(char *);
 
+/**
+ * @brief Removes the newline character from the given string.
+ *
+ * This function takes a string and removes the newline character from it.
+ *
+ * @param str A pointer to a character array representing the string.
+ */
+void clean_newline(char *str);
+
+
 #endif
+

@@ -68,6 +68,13 @@ void send_invite(ActiveClients clients, Client *sender,
     return;
   }
   Client *recipient = find_client_by_username(clients, recipient_username);
+  
+  if (recipient == NULL) {
+    printf("DEBUG: User '%s' not found in active clients.\n", recipient_username);
+} else {
+    printf("DEBUG: Found user '%s' in active clients.\n", recipient->username);
+}
+
   if (recipient == NULL)
   {
     strcpy(message, "The user you asked for is not connected.");
@@ -89,7 +96,7 @@ void send_invite(ActiveClients clients, Client *sender,
     {
       strcpy(message, "You got an invite for a game against ");
       strcat(message, sender->username);
-      strcat(message, " type /fight ");
+      strcat(message, " type /start_duel ");
       strcat(message, sender->username);
       strcat(message, " to accept the request");
       write_client(recipient->socket, message);
@@ -145,12 +152,12 @@ void send_invite(ActiveClients clients, Client *sender,
     int first = (rand() % 2) + 1;
     if (first == 1)
     {
-      write_client(sender->socket, "You start, type /plays <pit_num>");
+      write_client(sender->socket, "You start, type /make_move <pit_num>");
       sender->turn = 1;
     }
     else
     {
-      write_client(recipient->socket, "You start, type /plays <pit_num>");
+      write_client(recipient->socket, "You start, type /make_move <pit_num>");
       recipient->turn = 1;
     }
   }
