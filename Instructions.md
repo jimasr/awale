@@ -7,16 +7,17 @@
 ex : ./prog.out 127.0.0.1 Saad
 
 ## User Commands:
-- **/users** -> To get the list of users connected on the server -> code: **/000**
-- **/fight** <username> -> To send a challenge to another player, if they challenged you already, you get in a game with them -> code: **/001 <username(USERNAME_SIZE chars)>**
-- **/games** -> To get the list of all the games going on -> code: **/002**
-- **/plays** <pit_number> -> To make a play -> code: **/003**
-- **/watch** <username> -> To watch the games of a player -> code: **/004 <username(USERNAME_SIZE chars)>** (a client can type /watch <own_username> to stop watching someone)
-- **/chbio** <bio> -> To change bio -> code: **/005 <bio(BIO_SIZE chars)>**
-- **/shbio** <username> -> To show the bio of a user -> **/006 <username(USERNAME_SIZE chars)>**
-- **/addfr** <username> -> To send a friend request to a user -> **/007 <username(USERNAME_SIZE chars)>**
-- **/frnds** -> To see your friendlist -> **/008**
-- **/privt** -> Toggles private mode, only users in the FriendList can watch their games -> **/009**
-- **/leave** -> To leave a game, the player leaving will lose. -> **/010**
-- **/hgame** -> To get the list of all the previous games -> code : **/011**
-- **/rgame** <game_id> -> To rewatch a previous game -> code : **/012**
+/list_users          - List all active users
+/start_duel <user>   - Challenge a user to a duel
+/list_games          - List all active games
+/make_move <pit>     - Make a move in your game
+/watch_player <user> - Watch a player's game
+/change_bio <bio>    - Update your biography
+/show_bio <user>     - Show the biography of a user
+/add_friend <user>   - Send a friend request
+/list_friends        - List your friends
+/toggle_private      - Toggle private mode
+/leave_game          - Leave your current game
+/game_history        - View your game history
+/replay_game <id>    - Replay a game by ID
+/help                - Show this help message
