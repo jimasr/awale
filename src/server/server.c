@@ -5,6 +5,7 @@
 
 #include "server.h"
 #include "client.h"
+#include "../util/logger.h"
 
 static void init(void)
 {
@@ -28,7 +29,6 @@ static void end(void)
 
 static void app(void)
 {
-   printf("test");
 
    SOCKET sock = init_connection();
    char buffer[BUF_SIZE];
@@ -97,6 +97,12 @@ static void app(void)
          strncpy(c.name, buffer, BUF_SIZE - 1);
          clients[actual] = c;
          actual++;
+
+         log_message("INFO", "New client %s connected", c.name);
+         fflush(stdout); 
+
+         send_welcome_message(csock);
+         send_player_list(csock, clients, actual);
       }
       else
       {
@@ -228,6 +234,48 @@ static void write_client(SOCKET sock, const char *buffer)
       exit(errno);
    }
 }
+
+
+
+// util.c
+
+static void send_welcome_message(SOCKET sock)
+{
+   const char *WELCOME_MESSAGE = 
+      "  /$$$$$$                          /$$\n"
+      " /$$__  $$                        | $$\n"
+      "| $$  \\ $$ /$$  /$$  /$$  /$$$$$$ | $$  /$$$$$$\n"
+      "| $$$$$$$$| $$ | $$ | $$ |____  $$| $$ /$$__  $$\n"
+      "| $$__  $$| $$ | $$ | $$  /$$$$$$$| $$| $$$$$$$$\n"
+      "| $$  | $$| $$ | $$ | $$ /$$__  $$| $$| $$_____/ \n"
+      "| $$  | $$|  $$$$$/$$$$/|  $$$$$$$| $$|  $$$$$$$\n"
+      "|__/  |__/ \\_____\\/___/  \\_______/|__/ \\_______/\n\n\n\n"; 
+
+   write_client(sock, WELCOME_MESSAGE);
+}
+
+
+/**
+ * Broadcast the list of available players to all clients
+ */
+static void send_player_list(SOCKET sock, Client *clients, int actual)
+{
+   char player_list[BUF_SIZE] = "Currently online players:\n";
+   for (int j = 0; j < actual; j++) {
+
+      char index_str[10];
+      snprintf(index_str, sizeof(index_str), "%d. ", j + 1);
+
+      strncat(player_list, index_str, sizeof(player_list) - strlen(player_list) - 1);
+      strncat(player_list, clients[j].name, sizeof(player_list) - strlen(player_list) - 1);
+      strncat(player_list, "\n", sizeof(player_list) - strlen(player_list) - 1);
+   }
+
+   // Broadcast the list to new client
+   write_client(sock, player_list);
+   
+}
+
 
 int main(int argc, char **argv)
 {
