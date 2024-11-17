@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "client.h"
-#include "client_package.h"
+#include "client_command_parser.h"
 
 // Fonction principale de l'application
 static void client_main_loop(const char *address, const char *name) {
@@ -34,7 +34,7 @@ static void client_main_loop(const char *address, const char *name) {
 
     if (FD_ISSET(STDIN_FILENO, &rdfs)) { // Si quelque chose provient du clavier
       if (fgets(buffer, BUF_SIZE - 1, stdin)) {
-        if (!process(buffer)) {
+        if (!handle_client_input(buffer)) {
           continue;
         }
       } else {

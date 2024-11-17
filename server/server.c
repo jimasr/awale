@@ -5,10 +5,10 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "commands.h"
+#include "server_command_handler.h"
 #include "server.h"
-#include "server_client.h"
-#include "server_package.h"
+#include "server_client_manager.h"
+#include "server_command_router.h"
 
 // Fonction principale de l'application
 static void server_main_loop(void)
@@ -76,9 +76,9 @@ static void server_main_loop(void)
 
       char username[USERNAME_SIZE];
       strncpy(username, buffer, USERNAME_SIZE);
-      if (is_already_used(clients, username))
+      if (is_username_already_used(clients, username))
       {
-        write_client(csock, "Ce nom d'utilisateur est déjà utilisé, veuillez revenir avec un autre");
+        send_message_to_client(csock, "Usernam already used, please provide another one");
         closesocket(csock);
         continue;
       }
@@ -110,7 +110,7 @@ static void server_main_loop(void)
       strcpy(c->username, username);
       strcpy(c->bio, "Cet utilisateur n'a pas encore écrit sa bio.");
 
-      if (!add_client(&clients, c))
+      if (!add_active_client(&clients, c))
       {
         continue;
       }
@@ -121,7 +121,7 @@ static void server_main_loop(void)
 
       // Ajouter un message de bienvenue après avoir validé l'utilisateur
       char welcome_message[BUF_SIZE] = "Welcome to AWALE game. Type /help for documentation";
-      write_client(csock, welcome_message); // Envoi du message de bienvenue
+      send_message_to_client(csock, welcome_message); // Envoi du message de bienvenue
     }
     else
     { // Dans ce cas, au moins une socket client est lisible.
@@ -136,21 +136,21 @@ static void server_main_loop(void)
             closesocket(client_iterator->socket);
             strncpy(buffer, client_iterator->username, BUF_SIZE - 1);
             strncat(buffer, " déconnecté !", BUF_SIZE - strlen(buffer) - 1);
-            send_message_to_all_clients(clients, *client_iterator, buffer, 1);
+            broadcast_to_all_clients(clients, *client_iterator, buffer, 1);
 
             if (client_iterator->game)
             {
               strcpy(client_iterator->game->winner, client_iterator->opponent->username);
-              end_game(client_iterator, &games);
+              finalize_game_session(client_iterator, &games);
               client_iterator->opponent->opponent = NULL;
               client_iterator->opponent = NULL;
             }
 
-            remove_client(&clients, client_iterator);
+            remove_active_client(&clients, client_iterator);
           }
           else
-          { // INFO: C'est ici que nous allons dans handle_incomming_package();
-            handle_incomming_package(clients, client_iterator, buffer, &games, &current_gm_id);
+          { // INFO: C'est ici que nous allons dans dispatch_incomming_package();
+            dispatch_client_command(clients, client_iterator, buffer, &games, &current_gm_id);
           }
           break; // ISSUE: Cela peut causer une famine si le premier processus continue de parler ?
         }
@@ -252,7 +252,7 @@ void load_games(Games *games)
   fseek(file, 0, SEEK_SET);
   while (!feof(file))
   {
-    Game *game = parseCSVToGame(file);
+    Game *game = import_game_from_csv(file);
     if (game == NULL)
     {
       break;

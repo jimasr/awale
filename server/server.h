@@ -8,7 +8,7 @@
 #include <sys/types.h>      // Pour les définitions de types de données
 #include <unistd.h>         // Pour les fonctions POSIX comme close
 
-#include "server_client.h"  // Inclusion du fichier d'en-tête pour les clients du serveur
+#include "server_client_manager.h"  // Inclusion du fichier d'en-tête pour les clients du serveur
 
 /**
  * @brief Fonction principale de l'application serveur.

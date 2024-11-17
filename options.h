@@ -8,6 +8,10 @@
 #define SOCKET_ERROR -1 // Valeur pour une erreur de socket
 #define closesocket(s) close(s) // Redéfinition de closesocket pour utiliser close
 
+#define PASSWORD_HASH_SIZE 65 // Taille pour le hash SHA256 + '\0'
+#define USERS_FILE "users.csv" // Fichier de stockage des utilisateurs
+
+
 typedef int SOCKET; // Définition de SOCKET comme un entier
 typedef struct sockaddr_in SOCKADDR_IN; // Définition de SOCKADDR_IN comme struct sockaddr_in
 typedef struct sockaddr SOCKADDR; // Définition de SOCKADDR comme struct sockaddr
