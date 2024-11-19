@@ -248,12 +248,41 @@ int is_client_in_active_list(Client *client, ActiveClients list_of_clients);
 int are_clients_friends(Client *client1, Client *client2);
 
 /**
- * @brief Vérifie si un nom d'utilisateur est déjà utilisé.
+ * @brief Vérifie si un client est déjà connecté.
+ * 
+ * @param clients Liste des clients actifs.
+ * @param username Nom
+ * @return int 1 si le client est déjà connecté, 0 sinon.
+ */
+int is_already_connected(ActiveClients clients, char *username);
+
+/**
+ * @brief Vérifie si un nom d'utilisateur est déjà utilisé dans le users.csv
  * 
  * @param clients Liste des clients actifs.
  * @param username Nom d'utilisateur à vérifier.
  * @return int 1 si le nom d'utilisateur est déjà utilisé, 0 sinon.
  */
+
 int is_username_already_used(ActiveClients clients, char *username);
+
+/**
+ * @brief Fonction pour enregistrer un client.
+ * 
+ * @param username Nom d'utilisateur du client.
+ * @param password Mot de passe du client.
+ * @return int 0 en cas de succès, -1 en cas d'erreur.
+ */
+int register_client(char *username, char *password);
+
+/**
+ * @brief Fonction pour connecter un client.
+ * 
+ * @param username Nom d'utilisateur du client.
+ * @param password Mot de passe du client.
+ * @return int 1 en cas de succès, 0 en cas d'erreur.
+ */
+int login_client(char *username, char *password);
+
 
 #endif

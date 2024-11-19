@@ -75,12 +75,50 @@ static void server_main_loop(void)
       }
 
       char username[USERNAME_SIZE];
+      char password[PASSWORD_SIZE];
       strncpy(username, buffer, USERNAME_SIZE);
-      if (is_username_already_used(clients, username))
-      {
-        send_message_to_client(csock, "Usernam already used, please provide another one");
+
+      //modify here
+      if(is_already_connected(clients, username)){
+        send_message_to_client(csock, "You are already connected");
         closesocket(csock);
         continue;
+      } else {
+        if (is_username_already_used(clients, username))
+        {
+          char greetings[BUF_SIZE] = "Welcome back, ";
+          strcat(greetings, username);
+
+          send_message_to_client(csock, greetings);
+          send_message_to_client(csock, "\nPlease provide your password");
+
+          if (read_client(csock, buffer) == 0)
+          {
+            continue; // Le client s'est déconnecté
+          }
+          strncpy(password, buffer, PASSWORD_SIZE);
+
+          if (!login_client(username, password))
+          {
+            send_message_to_client(csock, "Invalid password");
+            closesocket(csock);
+            continue;
+          }
+        } else {
+          char greetings[BUF_SIZE] = "Welcome new user, ";
+          strcat(greetings, username);
+
+          send_message_to_client(csock, greetings);
+          send_message_to_client(csock, "Please provide a password");
+
+          if (read_client(csock, buffer) == 0)
+          {
+            continue; // Le client s'est déconnecté
+          }  
+          strncpy(password, buffer, PASSWORD_SIZE);
+          register_client(username, password);
+        }
+
       }
 
       Client *c = malloc(sizeof(Client));
@@ -135,7 +173,7 @@ static void server_main_loop(void)
           { // Le client s'est déconnecté
             closesocket(client_iterator->socket);
             strncpy(buffer, client_iterator->username, BUF_SIZE - 1);
-            strncat(buffer, " déconnecté !", BUF_SIZE - strlen(buffer) - 1);
+            strncat(buffer, "Disconnected!", BUF_SIZE - strlen(buffer) - 1);
             broadcast_to_all_clients(clients, *client_iterator, buffer, 1);
 
             if (client_iterator->game)
@@ -240,7 +278,7 @@ static int read_client(SOCKET sock, char *buffer)
 // Fonction pour charger les jeux
 void load_games(Games *games)
 {
-  FILE *file = fopen("../game_data.csv", "r");
+  FILE *file = fopen("game_data.csv", "r");
 
   fseek(file, 0, SEEK_END);
   // Vérifier si le fichier est vide

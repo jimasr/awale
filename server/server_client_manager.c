@@ -326,14 +326,70 @@ int are_clients_friends(Client *client1, Client *client2) {
   return 0;
 }
 
-// Vérifie si un nom d'utilisateur est déjà utilisé
-int is_username_already_used(ActiveClients clients, char *username) {
-  Client *client = clients.first;
-  while (client) {
-    if (!strcmp(client->username, username)) {
+int is_already_connected(ActiveClients clients, char *username) {
+  Client *client_iterator = clients.first;
+  while (client_iterator) {
+    if (!strcmp(client_iterator->username, username)) {
       return 1;
     }
-    client = client->next;
+    client_iterator = client_iterator->next;
   }
+  return 0;
+}
+
+// Vérifie si un nom d'utilisateur est déjà utilisé
+int is_username_already_used(ActiveClients clients, char *username) {
+  FILE *file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+  char line[100];
+  while (fgets(line, 100, file)) {
+    char *token = strtok(line, ",");
+    if (!strcmp(token, username)) {
+      fclose(file);
+      return 1;    }
+  }
+  fclose(file);
+  return 0;
+}
+
+int register_client(char *username, char *password) {
+  FILE *file = fopen("users.csv", "a");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+  fprintf(file, "%s,%s\n", username, password);
+  fclose(file);
+  return 1;
+}
+
+int login_client(char *username, char *password) {
+  FILE *file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+  char line[100];
+  while (fgets(line, 100, file)) {
+    char *token = strtok(line, ",");
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+      if (!strcmp(token, password)) {
+        fclose(file);
+        return 1;
+      }
+
+    }
+  }
+  fclose(file);
   return 0;
 }
