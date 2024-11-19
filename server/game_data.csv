@@ -1,0 +1,17 @@
+0,Hazim,Saad,0,0,-1,Saad
+Hazim,1
+Saad,2
+end
+1,Watcher,Saad,0,0,-1,Saad
+Saad,5
+end
+2,Saad,Chicken,0,0,-1,Chicken
+end
+3,Chicken,JoueurDuBatIF,0,0,-1,JoueurDuBatIF
+end
+4,PAPARAZZI,JoueurDuBatIF,0,0,-1,JoueurDuBatIF
+end
+5,HAZIM,PAPARAZZI,0,0,-1,
+end
+6,Hazim,Saad,0,0,-1,Saad
+end
