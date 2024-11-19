@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "server_client_manager.h"
+#include "util/libbcrypt/bcrypt.h"
 
 // Ajoute un client à la liste des clients actifs
 int add_active_client(ActiveClients *clients, Client *client) {
@@ -361,7 +362,20 @@ int register_client(char *username, char *password) {
     perror("fopen()");
     return 0;
   }
-  fprintf(file, "%s,%s\n", username, password);
+
+  char salt[BCRYPT_HASHSIZE];
+  char hash[BCRYPT_HASHSIZE];
+
+  int ret = bcrypt_gensalt(12, salt);
+
+  ret = bcrypt_gensalt(12, salt);
+  assert(ret == 0);
+  ret = bcrypt_hashpw(password, salt, hash);
+  assert(ret == 0);
+
+  printf("%s, hashed: %s", password, hash);
+  fflush(stdout);
+  fprintf(file, "%s,%s\n", username, hash);
   fclose(file);
   return 1;
 }
@@ -383,7 +397,11 @@ int login_client(char *username, char *password) {
       if ((pos = strchr(token, '\n')) != NULL) {
         *pos = '\0';
       }
-      if (!strcmp(token, password)) {
+
+      int ret = bcrypt_checkpw(password, token);
+      assert(ret != -1);
+
+      if (!ret) { // Passwords match
         fclose(file);
         return 1;
       }
