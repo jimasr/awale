@@ -73,7 +73,6 @@ void remove_active_client(ActiveClients *clients, Client *client) {
   }
   Friend *friend_it = client->friends->first;
   while (friend_it) {
-    remove_friend_from_list(friend_it->friend_of_client->friends, client);
     Friend *temp = friend_it;
     friend_it = friend_it->next;
     free(temp);
@@ -138,30 +137,7 @@ int add_friend_to_list(FriendList *friends, Friend *new_friend) {
 }
 
 
-// Supprime un ami de la liste des amis
-void remove_friend_from_list(FriendList *friends, Client *client) {
-  Friend *friend_it = friends->first;
-  while (friend_it) {
-    if (!strcmp(friend_it->friend_of_client->username, client->username)) {
-      break;
-    }
-    friend_it = friend_it->next;
-  }
-  if (!friend_it) {
-    printf("Client not found in friendlist\n");
-    return;
-  }
-  if (friends->first == friend_it) {
-    friends->first = friends->first->next;
-  } else if (friends->last == friend_it) {
-    friends->last = friends->last->previous;
-    friends->last->next = NULL;
-  } else {
-    friend_it->previous->next = friend_it->next;
-    friend_it->next->previous = friend_it->previous;
-  }
-  free(friend_it);
-}
+
 
 // Ajoute une invitation à la liste des invitations
 int add_invite_to_list(Invites *invites, Client *recipient) {
@@ -373,8 +349,6 @@ int register_client(char *username, char *password) {
   ret = bcrypt_hashpw(password, salt, hash);
   assert(ret == 0);
 
-  printf("%s, hashed: %s", password, hash);
-  fflush(stdout);
   fprintf(file, "%s,%s\n", username, hash);
   fclose(file);
   return 1;
@@ -410,4 +384,55 @@ int login_client(char *username, char *password) {
   }
   fclose(file);
   return 0;
+}
+
+int init_client(Client *client) {
+  // Init friends
+  FILE * file = fopen("friends.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+
+  char * username = client->username;
+
+  char line[100];
+  while (fgets(line, 100, file)) {
+    char *token = strtok(line, ",");
+
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+
+      Friend *friend = malloc(sizeof(Friend));
+      friend->next = NULL;
+
+      Client *friend_client = malloc(sizeof(Client));
+      strcpy(friend_client->username, token);
+
+      friend->friend_of_client = friend_client;
+      add_friend_to_list(client->friends, friend);
+    }
+  }
+  fclose(file);
+  return 0;
+}
+
+int persist_friend_client(Client *client, Client *friend) {
+  FILE *file = fopen("friends.csv", "a");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+  printf("Persisting friendship between %s and %s\n", client->username, friend->username);
+  fflush(stdout);
+
+  fprintf(file, "%s,%s\n", client->username, friend->username);
+  fclose(file);
+  return 1;
 }

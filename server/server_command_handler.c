@@ -444,7 +444,8 @@ void send_friend_invite(ActiveClients clients, Client *sender,
     strcpy(message, "You cannot send a friend request to yourself.");
     send_message_to_client(sender->socket, message);
   }
-  else if(are_clients_friends(sender, recipient))
+  else if (are_clients_friends(sender, recipient))
+
   {
     strcpy(message, "You are already friends with ");
     strcat(message, recipient->username);
@@ -480,6 +481,8 @@ void send_friend_invite(ActiveClients clients, Client *sender,
     strcat(message, recipient->username);
     send_message_to_client(sender->socket, message);
 
+    persist_friend_client(sender, recipient);
+
     Friend *friendship_2 = malloc(sizeof(Friend));
     friendship_2->next = NULL;
     friendship_2->friend_of_client = sender;
@@ -488,6 +491,8 @@ void send_friend_invite(ActiveClients clients, Client *sender,
     strcpy(message, "You are now friends with ");
     strcat(message, sender->username);
     send_message_to_client(recipient->socket, message);
+
+    persist_friend_client(recipient, sender);
   }
 }
 
