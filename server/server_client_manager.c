@@ -396,7 +396,7 @@ int init_client(Client *client) {
 
   char * username = client->username;
 
-  char line[100];
+  char line[450];
   while (fgets(line, 100, file)) {
     char *token = strtok(line, ",");
 
@@ -420,6 +420,30 @@ int init_client(Client *client) {
     }
   }
   fclose(file);
+
+  // Init bio
+  file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+
+  while (fgets(line, 450, file)) {
+    char *token = strtok(line, ",");
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+      token = strtok(NULL, ","); // Get bio
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+
+      strcpy(client->bio, token);
+    }
+  }
+  fclose(file);
   return 0;
 }
 
@@ -427,12 +451,52 @@ int persist_friend_client(Client *client, Client *friend) {
   FILE *file = fopen("friends.csv", "a");
   if (!file) {
     perror("fopen()");
-    return 0;
+    return -1;
   }
-  printf("Persisting friendship between %s and %s\n", client->username, friend->username);
-  fflush(stdout);
-
   fprintf(file, "%s,%s\n", client->username, friend->username);
   fclose(file);
-  return 1;
+  return 0;
+}
+
+int persist_bio_client(Client *client, char *bio) {
+  FILE *file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return -1;
+  }
+
+  FILE *temp = fopen("users_temp.csv", "w");
+  if (!temp) {
+    perror("fopen()");
+    fclose(file);
+    return -1;
+  }
+
+  char line[450];
+  int updated = 0;
+  while (fgets(line, sizeof(line), file)) {
+    char *username = strtok(line, ",");
+    char *password = strtok(NULL, ",");
+    char *current_bio = strtok(NULL, ",");
+
+    if (username && password && current_bio && strcmp(username, client->username) == 0) {
+      fprintf(temp, "%s,%s,%s\n", username, password, bio);
+      updated = 1;
+    } else {
+      fprintf(temp, "%s,%s,%s", username, password, current_bio);
+    }
+  }
+
+  fclose(file);
+  fclose(temp);
+
+  // Replace the original file with the temporary file
+  if (updated) {
+    remove("users.csv");
+    rename("users_temp.csv", "users.csv");
+  } else {
+    remove("users_temp.csv");
+  }
+
+  return updated ? 0 : -1;
 }

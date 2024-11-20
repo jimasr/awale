@@ -298,9 +298,19 @@ int init_client(Client *client);
  * 
  * @param client 
  * @param new_friend_client 
- * @return int 
+ * @return int -1 en cas d'erreur, 0 en cas de succès
  */
 int persist_friend_client(Client *client, Client *new_friend_client);
+
+
+/**
+ * @brief Fonction pour persister bio avec le client
+ * 
+ * @param client 
+ * @param bio 
+ * @return int 
+ */
+int persist_bio_client(Client *client, char *bio);
 
 
 #endif
