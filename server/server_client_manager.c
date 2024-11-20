@@ -73,7 +73,6 @@ void remove_active_client(ActiveClients *clients, Client *client) {
   }
   Friend *friend_it = client->friends->first;
   while (friend_it) {
-    remove_friend_from_list(friend_it->friend_of_client->friends, client);
     Friend *temp = friend_it;
     friend_it = friend_it->next;
     free(temp);
@@ -138,30 +137,7 @@ int add_friend_to_list(FriendList *friends, Friend *new_friend) {
 }
 
 
-// Supprime un ami de la liste des amis
-void remove_friend_from_list(FriendList *friends, Client *client) {
-  Friend *friend_it = friends->first;
-  while (friend_it) {
-    if (!strcmp(friend_it->friend_of_client->username, client->username)) {
-      break;
-    }
-    friend_it = friend_it->next;
-  }
-  if (!friend_it) {
-    printf("Client not found in friendlist\n");
-    return;
-  }
-  if (friends->first == friend_it) {
-    friends->first = friends->first->next;
-  } else if (friends->last == friend_it) {
-    friends->last = friends->last->previous;
-    friends->last->next = NULL;
-  } else {
-    friend_it->previous->next = friend_it->next;
-    friend_it->next->previous = friend_it->previous;
-  }
-  free(friend_it);
-}
+
 
 // Ajoute une invitation à la liste des invitations
 int add_invite_to_list(Invites *invites, Client *recipient) {
@@ -412,8 +388,6 @@ int login_client(char *username, char *password) {
 
 int init_client(Client *client) {
   // Init friends
-  printf("Init client\n");
-  fflush(stdout);
   FILE * file = fopen("friends.csv", "r");
   if (!file) {
     perror("fopen()");
@@ -421,8 +395,6 @@ int init_client(Client *client) {
   }
 
   char * username = client->username;
-  printf("Username: %s\n", username);
-  fflush(stdout);
 
   char line[100];
   while (fgets(line, 100, file)) {
@@ -449,4 +421,18 @@ int init_client(Client *client) {
   }
   fclose(file);
   return 0;
+}
+
+int persist_friend_client(Client *client, Client *friend) {
+  FILE *file = fopen("friends.csv", "a");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+  printf("Persisting friendship between %s and %s\n", client->username, friend->username);
+  fflush(stdout);
+
+  fprintf(file, "%s,%s\n", client->username, friend->username);
+  fclose(file);
+  return 1;
 }

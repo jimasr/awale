@@ -145,13 +145,6 @@ void remove_observer_from_list(Observers *observers, Client *client);
  */
 int add_friend_to_list(FriendList *friends, Friend *new_friend);
 
-/**
- * @brief Supprime un ami de la liste des amis.
- * 
- * @param friends Pointeur vers la liste des amis.
- * @param client Pointeur vers le client ami à supprimer.
- */
-void remove_friend_from_list(FriendList *friends, Client *client);
 
 /**
  * @brief Écrit un message à un client via son socket.
@@ -300,6 +293,14 @@ void stop_watching_player(Client *client);
 int init_client(Client *client);
 
 
+/**
+ * @brief Fonction pour persister ami avec le client
+ * 
+ * @param client 
+ * @param new_friend_client 
+ * @return int 
+ */
+int persist_friend_client(Client *client, Client *new_friend_client);
 
 
 #endif
