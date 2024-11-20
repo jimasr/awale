@@ -90,7 +90,7 @@ static void server_main_loop(void)
           strcat(greetings, username);
 
           send_message_to_client(csock, greetings);
-          send_message_to_client(csock, "\n Please provide your password");
+          send_message_to_client(csock, "Please provide your password");
 
           if (read_client(csock, buffer) == 0)
           {
@@ -140,6 +140,7 @@ static void server_main_loop(void)
       c->observers = observers;
       c->observers->first = NULL;
       c->observers->last = NULL;
+
       c->friends = friendList;
       c->friends->first = NULL;
       c->friends->last = NULL;
@@ -147,6 +148,8 @@ static void server_main_loop(void)
 
       strcpy(c->username, username);
       strcpy(c->bio, "Cet utilisateur n'a pas encore écrit sa bio.");
+
+      init_client(c);
 
       if (!add_active_client(&clients, c))
       {

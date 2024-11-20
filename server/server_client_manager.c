@@ -373,8 +373,6 @@ int register_client(char *username, char *password) {
   ret = bcrypt_hashpw(password, salt, hash);
   assert(ret == 0);
 
-  printf("%s, hashed: %s", password, hash);
-  fflush(stdout);
   fprintf(file, "%s,%s\n", username, hash);
   fclose(file);
   return 1;
@@ -406,6 +404,47 @@ int login_client(char *username, char *password) {
         return 1;
       }
 
+    }
+  }
+  fclose(file);
+  return 0;
+}
+
+int init_client(Client *client) {
+  // Init friends
+  printf("Init client\n");
+  fflush(stdout);
+  FILE * file = fopen("friends.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+
+  char * username = client->username;
+  printf("Username: %s\n", username);
+  fflush(stdout);
+
+  char line[100];
+  while (fgets(line, 100, file)) {
+    char *token = strtok(line, ",");
+
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+
+      Friend *friend = malloc(sizeof(Friend));
+      friend->next = NULL;
+
+      Client *friend_client = malloc(sizeof(Client));
+      strcpy(friend_client->username, token);
+
+      friend->friend_of_client = friend_client;
+      add_friend_to_list(client->friends, friend);
     }
   }
   fclose(file);

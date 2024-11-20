@@ -291,6 +291,15 @@ int login_client(char *username, char *password);
  */
 void stop_watching_player(Client *client);
 
+/**
+ * @brief Fonction pour initialiser un client.
+ * 
+ * @param client Pointeur vers le client
+ * @return int 0 en cas de succès, -1 en cas d'erreur.
+ */
+int init_client(Client *client);
+
+
 
 
 #endif
