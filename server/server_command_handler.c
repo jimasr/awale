@@ -266,55 +266,48 @@ void send_game_invite(ActiveClients clients, Client *sender,
 // Fonction pour traiter un mouvement de jeu effectué par un client
 void process_game_move(Client *sender, int num, Games *games)
 {
-  if (!sender->turn)
-  {
+    if (!sender->turn)
+    {
+        send_message_to_client(sender->socket, "It's not your turn.");
+        return;
+    }
 
-    send_message_to_client(sender->socket, "It's not your turn.");
-  }
-  else
-  {
     Game *game = sender->game;
     int player = (!strcmp(sender->username, game->player1)) ? (1) : (2);
     int opp = (player == 1) ? (2) : (1);
     int check = execute_move(game, num, player);
+
     if (!check)
     {
-
-      send_message_to_client(sender->socket,
-                             "Illegal move; you must feed you opponent.\n");
+        send_message_to_client(sender->socket, "Illegal move; you must feed your opponent.\n");
+        return;
     }
+
     if (check == -1)
     {
-
-      send_message_to_client(sender->socket,
-                             "Illegal move; you must choose a pit with seeds.\n");
+        send_message_to_client(sender->socket, "Illegal move; you must choose a pit with seeds.\n");
+        return;
     }
-    else
+
+    sender->turn = 0;
+    sender->opponent->turn = 1;
+
+    char board[500];  
+    snprintf(board, sizeof(board), "%s", generate_board_representation(game, player));
+    send_message_to_client(sender->socket, board);
+    broadcast_to_observers(sender->observers, board);
+
+    snprintf(board, sizeof(board), "Opponent's play :\n%s", generate_board_representation(game, opp));
+    send_message_to_client(sender->opponent->socket, board);
+    broadcast_to_observers(sender->opponent->observers, board);
+
+    if (check_game_end(game, player))
     {
-
-      sender->turn = 0;
-      sender->opponent->turn = 1;
-
-      char board[200];
-      strcpy(board, generate_board_representation(game, player));
-      send_message_to_client(sender->socket, board);
-      broadcast_to_observers(sender->observers, board);
-
-      strcpy(board, "Opponent's play :\n");
-      strcat(board, generate_board_representation(game, opp));
-      send_message_to_client(sender->opponent->socket, board);
-      broadcast_to_observers(sender->opponent->observers, board);
-
-      if (check_game_end(game, player))
-      {
         send_message_to_client(sender->socket, "End of the game.\n");
         send_message_to_client(sender->opponent->socket, "End of the game.\n");
-        broadcast_to_observers(sender->opponent->observers,
-                               "End of the game.\n");
+        broadcast_to_observers(sender->opponent->observers, "End of the game.\n");
         finalize_game_session(sender, games);
-      }
     }
-  }
 }
 
 // Fonction pour obtenir la liste des jeux en cours
@@ -452,6 +445,7 @@ void send_friend_invite(ActiveClients clients, Client *sender,
     send_message_to_client(sender->socket, message);
   }
   else if (are_clients_friends(sender, recipient))
+
   {
     strcpy(message, "You are already friends with ");
     strcat(message, recipient->username);
