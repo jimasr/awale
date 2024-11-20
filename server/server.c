@@ -103,7 +103,7 @@ static void server_main_loop(void)
             closesocket(csock);
             continue;
           }
-        } else { // Registeration
+        } else { // Registration
           char greetings[BUF_SIZE] = "Welcome new user, ";
           strcat(greetings, username);
 

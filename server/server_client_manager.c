@@ -349,7 +349,7 @@ int register_client(char *username, char *password) {
   ret = bcrypt_hashpw(password, salt, hash);
   assert(ret == 0);
 
-  fprintf(file, "%s,%s\n", username, hash);
+  fprintf(file, "%s,%s,Aucun bio.\n", username, hash);
   fclose(file);
   return 1;
 }
