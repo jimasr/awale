@@ -78,7 +78,6 @@ static void server_main_loop(void)
       char password[PASSWORD_SIZE];
       strncpy(username, buffer, USERNAME_SIZE);
 
-      //modify here
       if(is_already_connected(clients, username)){
         send_message_to_client(csock, "You are already connected");
         closesocket(csock);
@@ -104,7 +103,7 @@ static void server_main_loop(void)
             closesocket(csock);
             continue;
           }
-        } else {
+        } else { // Registeration
           char greetings[BUF_SIZE] = "Welcome new user, ";
           strcat(greetings, username);
 
@@ -147,7 +146,6 @@ static void server_main_loop(void)
       c->priv = 0;
 
       strcpy(c->username, username);
-      strcpy(c->bio, "Cet utilisateur n'a pas encore écrit sa bio.");
 
       init_client(c);
 

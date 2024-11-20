@@ -396,7 +396,7 @@ int init_client(Client *client) {
 
   char * username = client->username;
 
-  char line[100];
+  char line[450];
   while (fgets(line, 100, file)) {
     char *token = strtok(line, ",");
 
@@ -417,6 +417,30 @@ int init_client(Client *client) {
 
       friend->friend_of_client = friend_client;
       add_friend_to_list(client->friends, friend);
+    }
+  }
+  fclose(file);
+
+  // Init bio
+  file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return 0;
+  }
+
+  while (fgets(line, 450, file)) {
+    char *token = strtok(line, ",");
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+      token = strtok(NULL, ","); // Get bio
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+
+      strcpy(client->bio, token);
     }
   }
   fclose(file);
