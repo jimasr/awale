@@ -408,6 +408,7 @@ void update_client_bio(Client *client, char *bio)
   char message[200];
   strcpy(message, "Your bio was changed to: ");
   strcat(message, client->bio);
+  persist_bio_client(client, bio);
   send_message_to_client(client->socket, message);
 }
 
