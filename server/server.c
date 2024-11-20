@@ -89,7 +89,7 @@ static void server_main_loop(void)
           strcat(greetings, username);
 
           send_message_to_client(csock, greetings);
-          send_message_to_client(csock, " Please provide your password");
+          send_message_to_client(csock, "Please provide your password");
 
           if (read_client(csock, buffer) == 0)
           {
@@ -108,7 +108,7 @@ static void server_main_loop(void)
           strcat(greetings, username);
 
           send_message_to_client(csock, greetings);
-          send_message_to_client(csock, " Please provide a password");
+          send_message_to_client(csock, "Please provide a password");
 
           if (read_client(csock, buffer) == 0)
           {
