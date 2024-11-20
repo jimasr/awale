@@ -34,52 +34,105 @@ Game *initialize_game(char *joueur1, char *joueur2, int *id_jeu_courant)
   return jeu;
 }
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define INITIAL_BUFFER_SIZE 500
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define INITIAL_BUFFER_SIZE 500
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define INITIAL_BUFFER_SIZE 500
+
 char *generate_board_representation(Game *jeu, int joueur)
 {
-  int ligne_haute, ligne_basse;
-  char *adversaire, *nom_joueur;
-  ligne_haute = PITS_NB / 2 * (2 - joueur);
-  ligne_basse = PITS_NB / 2 * joueur - 1;
+    int ligne_haute, ligne_basse;
+    char *adversaire, *nom_joueur;
+    ligne_haute = PITS_NB / 2 * (2 - joueur);
+    ligne_basse = PITS_NB / 2 * joueur - 1;
 
-  if (joueur == 1)
-  {
-    adversaire = jeu->player2;
-    nom_joueur = jeu->player1;
-  }
-  else
-  {
-    adversaire = jeu->player1;
-    nom_joueur = jeu->player2;
-  }
+    if (joueur == 1)
+    {
+        adversaire = jeu->player2;
+        nom_joueur = jeu->player1;
+    }
+    else
+    {
+        adversaire = jeu->player1;
+        nom_joueur = jeu->player2;
+    }
 
-  char *plateau_affichage = (char *)malloc(200 * sizeof(char));
-  sprintf(plateau_affichage, "Côté de %s\n\n", adversaire);
+    // Allouer un tampon initial
+    size_t buffer_size = INITIAL_BUFFER_SIZE;
+    char *plateau_affichage = (char *)malloc(buffer_size);
+    if (!plateau_affichage)
+    {
+        return NULL; // Échec de l'allocation
+    }
 
-  for (int i = ligne_haute; i < ligne_haute + 6; ++i)
-  {
-    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", jeu->board[i]);
-  }
-  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n");
+    size_t longueur_utilisee = 0;
 
-  for (int i = 0; i < PITS_NB / 2; ++i)
-  {
-    sprintf(plateau_affichage + strlen(plateau_affichage), "-----");
-  }
-  sprintf(plateau_affichage + strlen(plateau_affichage), "\n");
+    // Fonction pour assurer l'espace restant
+    #define ENSURE_SPACE(size_needed) \
+        if (longueur_utilisee + (size_needed) >= buffer_size) { \
+            buffer_size *= 2; \
+            char *new_buffer = realloc(plateau_affichage, buffer_size); \
+            if (!new_buffer) { free(plateau_affichage); return NULL; } \
+            plateau_affichage = new_buffer; \
+        }
 
-  for (int i = ligne_basse; i > ligne_basse - 6; --i)
-  {
-    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", jeu->board[i]);
-  }
-  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n\nCôté de %s\n\n", nom_joueur);
+    // Ajouter les informations de l'adversaire
+    ENSURE_SPACE(50);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "%s's board \n\n", adversaire);
 
-  for (int j = 1; j <= 6; ++j)
-  {
-    sprintf(plateau_affichage + strlen(plateau_affichage), " | %d", j);
-  }
-  sprintf(plateau_affichage + strlen(plateau_affichage), " |\n\n");
+    for (int i = ligne_haute; i < ligne_haute + 6; ++i)
+    {
+        ENSURE_SPACE(10);
+        longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " | %d", jeu->board[i]);
+    }
+    ENSURE_SPACE(10);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " |\n");
 
-  return plateau_affichage;
+    // Ligne de séparation
+    for (int i = 0; i < PITS_NB / 2; ++i)
+    {
+        ENSURE_SPACE(10);
+        longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "-----");
+    }
+    ENSURE_SPACE(10);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "\n");
+
+    for (int i = ligne_basse; i > ligne_basse - 6; --i)
+    {
+        ENSURE_SPACE(10);
+        longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " | %d", jeu->board[i]);
+    }
+    ENSURE_SPACE(10);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " |\n\n%s's board \n\n", nom_joueur);
+
+    for (int j = 1; j <= 6; ++j)
+    {
+        ENSURE_SPACE(10);
+        longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " | %d", j);
+    }
+    ENSURE_SPACE(10);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, " |\n\n");
+
+    // Ajouter les scores capturés
+    ENSURE_SPACE(100);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "Captured seeds:\n");
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "%s: %d seeds\n", jeu->player1, jeu->score_player1);
+    longueur_utilisee += snprintf(plateau_affichage + longueur_utilisee, buffer_size - longueur_utilisee, "%s: %d seeds\n", jeu->player2, jeu->score_player2);
+
+    return plateau_affichage;
 }
 
 void copy_board(int *source, int *destination)
@@ -457,4 +510,3 @@ void delete_game(Game *jeu)
   free(jeu->moves);
   free(jeu);
 }
-

@@ -173,7 +173,7 @@ static void server_main_loop(void)
           { // Le client s'est déconnecté
             closesocket(client_iterator->socket);
             strncpy(buffer, client_iterator->username, BUF_SIZE - 1);
-            strncat(buffer, "Disconnected!", BUF_SIZE - strlen(buffer) - 1);
+            strncat(buffer, " Disconnected!", BUF_SIZE - strlen(buffer) - 1);
             broadcast_to_all_clients(clients, *client_iterator, buffer, 1);
 
             if (client_iterator->game)
