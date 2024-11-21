@@ -7,12 +7,6 @@
 
 ## Project Overview
 
-### Key Features
-
-- Bullet-point list of main features.
-- What makes your project stand out?
-- Mention any unique or innovative aspects.
-
 ## Installation
 
 ### Prerequisites
