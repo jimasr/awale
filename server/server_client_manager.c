@@ -500,3 +500,39 @@ int persist_bio_client(Client *client, char *bio) {
 
   return updated ? 0 : -1;
 }
+
+int read_bio_client(char *username, char *bio) {
+  printf("DEBUG\n");
+  fflush(stdout);
+  FILE *file = fopen("users.csv", "r");
+  if (!file) {
+    perror("fopen()");
+    return -1;
+  }
+
+  printf("DEBUG\n");
+  fflush(stdout);
+
+  char line[450];
+  while (fgets(line, 450, file)) {
+    char *token = strtok(line, ",");
+    if (!strcmp(token, username)) {
+      token = strtok(NULL, ",");
+      token = strtok(NULL, ","); // Get bio
+
+      // Remove newline character
+      char *pos;
+      if ((pos = strchr(token, '\n')) != NULL) {
+        *pos = '\0';
+      }
+
+      strcpy(bio, token);
+      printf("Bio: %s\n", bio);
+      fflush(stdout);
+      return 0;
+    }
+  }
+
+  fclose(file);
+  return -1;
+}

@@ -58,7 +58,7 @@ void dispatch_client_command(const ActiveClients clients, Client *client,
       it += 4;                                                  // Avancer le pointeur de 4 caractères
       char username_to_get_bio_from[USERNAME_SIZE];             // Tableau pour stocker le nom d'utilisateur dont on veut obtenir la biographie
       strncpy(username_to_get_bio_from, it, USERNAME_SIZE);     // Copier le nom d'utilisateur
-      send_user_bio(clients, client, username_to_get_bio_from); // Obtenir la biographie
+      send_user_bio(client, username_to_get_bio_from); // Obtenir la biographie
       break;
     case 7:
       it += 4;                                       // Avancer le pointeur de 4 caractères

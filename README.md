@@ -9,7 +9,6 @@
 
 ## Installation
 
-### Prerequisites
 
 To compile the program for the server-side, first make sure that you're in the project root and do the command below.
 
