@@ -308,9 +308,17 @@ int persist_friend_client(Client *client, Client *new_friend_client);
  * 
  * @param client 
  * @param bio 
- * @return int 
+ * @return int -1 en cas d'erreur, 0 en cas de succès
  */
 int persist_bio_client(Client *client, char *bio);
 
+/**
+ * @brief Fonction pour lire la biographie du client
+ * 
+ * @param username Nom d'utilisateur du client
+ * @param bio Pointeur vers la biographie 
+ * @return int -1 en cas d'erreur, 0 en cas de succès
+ */
+int read_bio_client(char *username, char *bio);
 
 #endif

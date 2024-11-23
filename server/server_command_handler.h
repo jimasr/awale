@@ -72,11 +72,10 @@ void update_client_bio(Client *client, char *bio);
 /**
  * @brief Récupère la biographie d'un utilisateur.
  * 
- * @param clients Liste des clients actifs.
  * @param client Pointeur vers le client.
  * @param username Nom d'utilisateur dont on veut la biographie.
  */
-void send_user_bio(ActiveClients clients, Client *client, char *username);
+void send_user_bio(Client* client, char *username);
 
 /**
  * @brief Envoie une demande d'ami à un autre client.

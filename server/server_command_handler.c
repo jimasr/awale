@@ -413,12 +413,12 @@ void update_client_bio(Client *client, char *bio)
 }
 
 // Fonction pour obtenir la biographie d'un autre joueur
-void send_user_bio(ActiveClients clients, Client *client, char *username)
+void send_user_bio(Client* client, char *username)
 {
-  Client *client_to_get_bio_from = find_active_client_by_username(clients, username);
-  if (client_to_get_bio_from)
+  char *bio = malloc(BIO_SIZE);
+  if (!read_bio_client(username, bio))
   {
-    send_message_to_client(client->socket, client_to_get_bio_from->bio);
+    send_message_to_client(client->socket, bio);
   }
   else
   {
@@ -427,6 +427,7 @@ void send_user_bio(ActiveClients clients, Client *client, char *username)
     strcat(message, " was not found.");
     send_message_to_client(client->socket, message);
   }
+  free(bio);
 }
 
 // Fonction pour envoyer une demande d'ami
